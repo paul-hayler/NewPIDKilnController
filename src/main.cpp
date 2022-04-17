@@ -19,7 +19,7 @@ const int pidCycle = 2500;             // Time for a complete PID on/off cycle f
 double pidInput[numZones];             // Input array for PID loop (actual temp reading from thermocouple).  Don't change.
 double pidOutput[numZones];            // Output array for PID loop (relay for heater).  Don't change.
 double pidSetPoint[numZones];          // Setpoint array for PID loop (temp you are trying to reach).  Don't change.
-PID pidCont[numZones] = {PID(&pidInput[0], &pidOutput[0], &pidSetPoint[0], 1, 10, 0, DIRECT)};  // PID controller array for each zone.  Set arguments 4/5/6 to the Kp, Ki, Kd values after tuning.
+PID pidCont[numZones] = {PID(&pidInput[0], &pidOutput[0], &pidSetPoint[0], 1, 0.2, 0.25, DIRECT)};  // PID controller array for each zone.  Set arguments 4/5/6 to the Kp, Ki, Kd values after tuning.
 const long saveCycle = 15000;          // How often to save current temp / setpoint (ms) 
 const int tempOffset[numZones] = {0};  // Array to add a temp offset for each zone (degrees).  Use if you have a cold zone in your kiln or if your thermocouple reading is off.  This gets added to the setpoint.
 const int tempRange = 2;               // This is how close the temp reading needs to be to the set point to shift to the hold phase (degrees).  Set to zero or a positive integer.
@@ -40,10 +40,11 @@ const int heaterPin[numZones] = {8};            // Pins connected to relays for 
 
 
 LiquidCrystal_I2C lcd(0x27,20,4);     // LCD display (connected to analog inputs / reverse order so I don't have to twist ribbon cable)
-Adafruit_MAX31855 thermocouple[0](MAXCLK, MAXCS, MAXDO);  // Pins connected to the thermocouple card.  This is an array for each thermocouple (zone).
+Adafruit_MAX31855 thermocouple(MAXCLK, MAXCS, MAXDO);  // Pins connected to the thermocouple card.  This is an array for each thermocouple (zone).
 
 // Setup other variables (DON'T CHANGE THESE)
 double calcSetPoint;        // Calculated set point (degrees)
+double initialTemp = 25;
 unsigned long holdStart;    // Exact time the hold phase of the segment started (ms).  Based on millis().
 int i = 0;                  // Simple loop counter
 int lastSeg = 0;            // Last segment number in firing schedule
@@ -81,7 +82,6 @@ void shutDown();
 void updateLCD();
 void updatePIDs();
 void updateSeg();
-
 
 //******************************************************************************************************************************
 //  SETUP: INITIAL SETUP (RUNS ONCE DURING START)
@@ -452,19 +452,29 @@ double readTemps() {
   // Loop thru all zones
   for (i = 0; i < numZones; i++) {
     if (tempScale == 'C') {
-      pidInput[i] = thermocouple[i].readCelsius();
+      pidInput[i] = thermocouple.readCelsius();
       while (isnan(pidInput[i])) {
-        pidInput[i] = thermocouple[i].readCelsius();
+        for (i=0; i<10; i++) {
+          pidInput[i] = thermocouple.readCelsius();
+        }
+        if (isnan(pidInput[i])) {
+          shutDown();
+        }
       }
+      Serial.println(thermocouple.readCelsius());
     }
     if (tempScale == 'F') {
-      pidInput[i] = thermocouple[i].readFahrenheit();
+      pidInput[i] = thermocouple.readFahrenheit();
       while (isnan(pidInput[i])) {
-        pidInput[i] = thermocouple[i].readFahrenheit();
+        for (i=0; i<10; i++) {
+          pidInput[i] = thermocouple.readFahrenheit();
+        }
+        if (isnan(pidInput[i])) {
+          shutDown();
+        }
       }
     }    
-  }
-
+  };
 }
 
 //******************************************************************************************************************************
@@ -609,10 +619,22 @@ void updatePIDs() {
   // Get the last target temperature
   if (segNum == 1) {  // Set to room temperature for first segment
     if (tempScale == 'C') {
-      lastTemp = 22;
+      if (!lastTemp) {
+        lastTemp = initialTemp;
+//        lastTemp = thermocouple.readCelsius();
+//        while (isnan(lastTemp)) {
+//          lastTemp = thermocouple.readCelsius();
+//        }
+      }
     }
     if (tempScale == 'F') {
-      lastTemp = 75;
+      if (!lastTemp) {
+        lastTemp = 75;
+//        lastTemp = thermocouple.readFahrenheit();
+//        while (isnan(lastTemp)) {
+//          lastTemp = thermocouple.readFahrenheit();
+//        }
+      }
     }
   }
   else {
