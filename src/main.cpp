@@ -519,7 +519,7 @@ void updateLCD() {
     lcd.print(F("TEMPS "));
     lcd.print((char)223);
     lcd.print(tempScale);
-    lcd.print(F(" Rdg / SetPt"));    
+    lcd.print(F(" Act / Target"));    
      
     for (i = 0; i < numZones; i++) {
       lcd.setCursor(1, i + 1);
@@ -577,7 +577,7 @@ void updateLCD() {
     }
   }
 
-  // Tools
+  // Supplementary Running Tools
   if (screenNum == 3) {
     lcd.print(F("       TOOLS:"));
     lcd.setCursor(2, 1);
@@ -621,19 +621,11 @@ void updatePIDs() {
     if (tempScale == 'C') {
       if (!lastTemp) {
         lastTemp = initialTemp;
-//        lastTemp = thermocouple.readCelsius();
-//        while (isnan(lastTemp)) {
-//          lastTemp = thermocouple.readCelsius();
-//        }
       }
     }
     if (tempScale == 'F') {
       if (!lastTemp) {
-        lastTemp = 75;
-//        lastTemp = thermocouple.readFahrenheit();
-//        while (isnan(lastTemp)) {
-//          lastTemp = thermocouple.readFahrenheit();
-//        }
+        lastTemp = (initialTemp * (9/5)) + 32;
       }
     }
   }
