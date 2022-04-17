@@ -453,7 +453,7 @@ double readTemps() {
   for (i = 0; i < numZones; i++) {
     if (tempScale == 'C') {
       pidInput[i] = thermocouple.readCelsius();
-      while (isnan(pidInput[i])) {
+      while (isnan(pidInput[i]) || (pidInput[i] == 0)) {
         for (i=0; i<10; i++) {
           pidInput[i] = thermocouple.readCelsius();
         }
@@ -465,7 +465,7 @@ double readTemps() {
     }
     if (tempScale == 'F') {
       pidInput[i] = thermocouple.readFahrenheit();
-      while (isnan(pidInput[i])) {
+      while (isnan(pidInput[i]) || (pidInput[i] == 0)) {
         for (i=0; i<10; i++) {
           pidInput[i] = thermocouple.readFahrenheit();
         }
