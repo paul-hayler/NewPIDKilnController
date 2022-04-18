@@ -19,7 +19,7 @@ const int pidCycle = 2500;             // Time for a complete PID on/off cycle f
 double pidInput[numZones];             // Input array for PID loop (actual temp reading from thermocouple).  Don't change.
 double pidOutput[numZones];            // Output array for PID loop (relay for heater).  Don't change.
 double pidSetPoint[numZones];          // Setpoint array for PID loop (temp you are trying to reach).  Don't change.
-PID pidCont[numZones] = {PID(&pidInput[0], &pidOutput[0], &pidSetPoint[0], 1, 0.2, 0.25, DIRECT)};  // PID controller array for each zone.  Set arguments 4/5/6 to the Kp, Ki, Kd values after tuning.
+PID pidCont[numZones] = {PID(&pidInput[0], &pidOutput[0], &pidSetPoint[0], 800, 47.37, 4.93, DIRECT)};  // PID controller array for each zone.  Set arguments 4/5/6 to the Kp, Ki, Kd values after tuning.
 const long saveCycle = 15000;          // How often to save current temp / setpoint (ms) 
 const int tempOffset[numZones] = {0};  // Array to add a temp offset for each zone (degrees).  Use if you have a cold zone in your kiln or if your thermocouple reading is off.  This gets added to the setpoint.
 const int tempRange = 2;               // This is how close the temp reading needs to be to the set point to shift to the hold phase (degrees).  Set to zero or a positive integer.
@@ -62,7 +62,7 @@ int schedNum = 1;           // Current firing schedule number.  This ties to the
 boolean schedOK = false;    // Is the schedule you loaded OK?
 unsigned long schedStart;   // Exact time you started running the schedule (ms).  Based on millis().
 int screenNum = 1;          // Screen number displayed during firing (1 = temps / 2 = schedule info / 3 = tools / 4 = done
-int segHold[20];            // Hold time for each segment (min).  This starts after it reaches target temp.
+unsigned int segHold[20];   // Hold time for each segment (min).  This starts after it reaches target temp.
 int segNum = 0;             // Current segment number running in firing schedule.  0 means a schedule hasn't been selected yet.
 boolean segPhase = 0;       // Current segment phase.  0 = ramp.  1 = hold.
 int segRamp[20];            // Rate of temp change for each segment (deg/hr).
@@ -448,7 +448,6 @@ void openSched() {
 //  READTEMPS: Read the temperatures
 //******************************************************************************************************************************
 double readTemps() {
-
   // Loop thru all zones
   for (i = 0; i < numZones; i++) {
     if (tempScale == 'C') {
@@ -461,7 +460,6 @@ double readTemps() {
           shutDown();
         }
       }
-      Serial.println(thermocouple.readCelsius());
     }
     if (tempScale == 'F') {
       pidInput[i] = thermocouple.readFahrenheit();
@@ -474,7 +472,7 @@ double readTemps() {
         }
       }
     }    
-  };
+  }
 }
 
 //******************************************************************************************************************************
