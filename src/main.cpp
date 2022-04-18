@@ -19,7 +19,7 @@ const int pidCycle = 2500;             // Time for a complete PID on/off cycle f
 double pidInput[numZones];             // Input array for PID loop (actual temp reading from thermocouple).  Don't change.
 double pidOutput[numZones];            // Output array for PID loop (relay for heater).  Don't change.
 double pidSetPoint[numZones];          // Setpoint array for PID loop (temp you are trying to reach).  Don't change.
-PID pidCont[numZones] = {PID(&pidInput[0], &pidOutput[0], &pidSetPoint[0], 800, 47.37, 4.93, DIRECT)};  // PID controller array for each zone.  Set arguments 4/5/6 to the Kp, Ki, Kd values after tuning.
+PID pidCont[numZones] = {PID(&pidInput[0], &pidOutput[0], &pidSetPoint[0], 550, 47.37, 4.93, DIRECT)};  // PID controller array for each zone.  Set arguments 4/5/6 to the Kp, Ki, Kd values after tuning.
 const long saveCycle = 15000;          // How often to save current temp / setpoint (ms) 
 const int tempOffset[numZones] = {0};  // Array to add a temp offset for each zone (degrees).  Use if you have a cold zone in your kiln or if your thermocouple reading is off.  This gets added to the setpoint.
 const int tempRange = 2;               // This is how close the temp reading needs to be to the set point to shift to the hold phase (degrees).  Set to zero or a positive integer.
@@ -517,7 +517,7 @@ void updateLCD() {
     lcd.print(F("TEMPS "));
     lcd.print((char)223);
     lcd.print(tempScale);
-    lcd.print(F(" Act / Target"));    
+    lcd.print(F(" Act / Tar"));    
      
     for (i = 0; i < numZones; i++) {
       lcd.setCursor(1, i + 1);
