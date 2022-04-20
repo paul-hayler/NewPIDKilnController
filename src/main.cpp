@@ -452,24 +452,14 @@ double readTemps() {
   for (i = 0; i < numZones; i++) {
     if (tempScale == 'C') {
       pidInput[i] = thermocouple.readCelsius();
-      while (isnan(pidInput[i]) || (pidInput[i] == 0)) {
-        for (i=0; i<10; i++) {
-          pidInput[i] = thermocouple.readCelsius();
-        }
-        if (isnan(pidInput[i])) {
-          shutDown();
-        }
+      while (isnan(pidInput[i])) {
+        pidInput[i] = thermocouple.readCelsius();
       }
     }
     if (tempScale == 'F') {
       pidInput[i] = thermocouple.readFahrenheit();
-      while (isnan(pidInput[i]) || (pidInput[i] == 0)) {
-        for (i=0; i<10; i++) {
-          pidInput[i] = thermocouple.readFahrenheit();
-        }
-        if (isnan(pidInput[i])) {
-          shutDown();
-        }
+      while (isnan(pidInput[i])) {
+        pidInput[i] = thermocouple.readFahrenheit();
       }
     }    
   }
@@ -617,14 +607,10 @@ void updatePIDs() {
   // Get the last target temperature
   if (segNum == 1) {  // Set to room temperature for first segment
     if (tempScale == 'C') {
-      if (!lastTemp) {
         lastTemp = initialTemp;
-      }
     }
     if (tempScale == 'F') {
-      if (!lastTemp) {
         lastTemp = (initialTemp * (9/5)) + 32;
-      }
     }
   }
   else {
@@ -675,7 +661,7 @@ void updateSeg() {
   }
 
   // Go to the next segment
-  if ((segPhase == 1) && (millis() - holdStart) >= (segHold[segNum - 1] * 60000)) {
+  if (segPhase == 1 && millis() - holdStart >= segHold[segNum - 1] * 60000) {
     segNum = segNum + 1;
     segPhase = 0;
     rampStart = millis();
