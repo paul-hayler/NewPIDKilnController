@@ -44,7 +44,7 @@ Adafruit_MAX31855 thermocouple(MAXCLK, MAXCS, MAXDO);  // Pins connected to the 
 
 // Setup other variables (DON'T CHANGE THESE)
 double calcSetPoint;        // Calculated set point (degrees)
-double initialTemp = 25;
+double initialTemp = 30;
 unsigned long holdStart;    // Exact time the hold phase of the segment started (ms).  Based on millis().
 int i = 0;                  // Simple loop counter
 int lastSeg = 0;            // Last segment number in firing schedule
